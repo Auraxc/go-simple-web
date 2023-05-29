@@ -32,8 +32,23 @@ func snippetView(w http.ResponseWriter, _ *http.Request) {
 
 // 添加 snippetCreate 处理方法
 // Add a snippetCreate handler function.
-func snippetCreate(w http.ResponseWriter, _ *http.Request) {
+func snippetCreate(w http.ResponseWriter, r *http.Request) {
 	_, err := w.Write([]byte("Create a new snippet..."))
+	if r.Method != "POST" {
+		// 这里使用一个判断来限定请求方法，如果不是 POST 请求，则返回一个 405 状态码，并且返回一个“请求方法不允许”的提示。
+		// If it's not, use the w.WriteHeader() method to send a 405 status
+		// code and the w.Write() method to write a "Method Not Allowed"
+		// response body. We then return from the function so that the
+		// subsequent code is not executed.
+
+		// 如果不指定状态码，默认会返回 200，这是不符合状态码设计的
+		w.WriteHeader(405)
+		_, err2 := w.Write([]byte("Method Not Allowed"))
+		if err2 != nil {
+			return
+		}
+		return
+	}
 	if err != nil {
 		return
 	}
