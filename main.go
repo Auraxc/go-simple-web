@@ -33,7 +33,6 @@ func snippetView(w http.ResponseWriter, _ *http.Request) {
 // 添加 snippetCreate 处理方法
 // Add a snippetCreate handler function.
 func snippetCreate(w http.ResponseWriter, r *http.Request) {
-	_, err := w.Write([]byte("Create a new snippet..."))
 	if r.Method != "POST" {
 		// 这里使用一个判断来限定请求方法，如果不是 POST 请求，则返回一个 405 状态码，并且返回一个“请求方法不允许”的提示。
 		// If it's not, use the w.WriteHeader() method to send a 405 status
@@ -49,6 +48,35 @@ func snippetCreate(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
+
+	// 当返回请求时，Go 会自动帮你填充以下响应头：Date、Content-Length、Content-Type
+	// Go 会主动猜测响应地类型，如果匹配不到，最终会设置为 Content-Type: application/octet-stream
+	//
+	//w.Header().Set("Content-Type", "application/json")
+	//w.Write([]byte(`{"name":"Alex"}`))
+
+	// 设置响应头的一些方法
+	// Set a new cache-control header. If an existing "Cache-Control" header exists
+	// it will be overwritten.
+	w.Header().Set("Cache-Control", "public, max-age=31536000")
+
+	// In contrast, the Add() method appends a new "Cache-Control" header and can
+	// be called multiple times.
+	w.Header().Add("Cache-Control", "public")
+	w.Header().Add("Cache-Control", "max-age=31536000")
+
+	// Delete all values for the "Cache-Control" header.
+	w.Header().Del("Cache-Control")
+
+	// Retrieve the first value for the "Cache-Control" header.
+	w.Header().Get("Cache-Control")
+
+	// Retrieve a slice of all values for the "Cache-Control" header.
+	w.Header().Values("Cache-Control")
+
+	_, err := w.Write([]byte("Create a new snippet..."))
+	w.Write([]byte(`{"name":"Alex"}`))
+
 	if err != nil {
 		return
 	}
