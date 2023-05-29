@@ -48,7 +48,10 @@ func snippetView(w http.ResponseWriter, r *http.Request) {
 	// 使用 fmt.Fprintf() 方法将 id 添加到响应中
 	// 注意这里使用了一个全新的返回响应的方法，fmt.Fprintf()，其第一个参数为 io.Writer(), 这个参数是一个接口
 	// 因为 http.ResponseWriter() 实现了这个接口，所以将它当作参数传入没有问题
-	fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
+	_, err = fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
+	if err != nil {
+		return
+	}
 }
 
 // 添加 snippetCreate 处理方法
