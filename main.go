@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 // 未使用的方法声明为 "_"
@@ -19,15 +21,34 @@ func home(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
+
 }
 
 // 添加 snippetView 处理方法
 // Add a snippetView handler function.
-func snippetView(w http.ResponseWriter, _ *http.Request) {
-	_, err := w.Write([]byte("Display a specific snippet..."))
+func snippetView(w http.ResponseWriter, r *http.Request) {
+	// Extract the value of the id parameter from the query string and try to
+	// convert it to an integer using the strconv.Atoi() function. If it can't
+	// be converted to an integer, or the value is less than 1, we return a 404 page
+	// not found response.
+
+	// 通过 r.URL.Query().Get() 方法获取 id 参数
+	// 因为用户输入的内容是不可信的，这里使用 strconv.Atoi() 方法将 id 转换成 int 类型的数字
+	// 如果转换失败或者 id 小于1，则返回一个 404 页面
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || id < 1 {
+		http.NotFound(w, r)
+		return
+	}
 	if err != nil {
 		return
 	}
+	// Use the fmt.Fprintf() function to interpolate the id value with our response
+	// and write it to the http.ResponseWriter.
+	// 使用 fmt.Fprintf() 方法将 id 添加到响应中
+	// 注意这里使用了一个全新的返回响应的方法，fmt.Fprintf()，其第一个参数为 io.Writer(), 这个参数是一个接口
+	// 因为 http.ResponseWriter() 实现了这个接口，所以将它当作参数传入没有问题
+	fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
 }
 
 // 添加 snippetCreate 处理方法
@@ -79,7 +100,6 @@ func snippetCreate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Values("Cache-Control")
 
 	_, err := w.Write([]byte("Create a new snippet..."))
-	w.Write([]byte(`{"name":"Alex"}`))
 
 	if err != nil {
 		return
