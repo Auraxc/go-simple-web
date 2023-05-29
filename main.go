@@ -56,6 +56,8 @@ func snippetCreate(w http.ResponseWriter, r *http.Request) {
 	//w.Write([]byte(`{"name":"Alex"}`))
 
 	// 设置响应头的一些方法
+	// 请求头会自动规范化为第一个字母大写，其余字母小写的形式，如果不需要这种自动格式化的操作，可以使用如下声明
+	//w.Header()["X-XSS-Protection"] = []string{"1; mode=block"}
 	// Set a new cache-control header. If an existing "Cache-Control" header exists
 	// it will be overwritten.
 	w.Header().Set("Cache-Control", "public, max-age=31536000")
@@ -66,6 +68,8 @@ func snippetCreate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Cache-Control", "max-age=31536000")
 
 	// Delete all values for the "Cache-Control" header.
+	// Del 操作不会删除 Go 自动设置的响应头，如果需要删除，那么需要使用如下方法
+	// w.Header()["Date"] = nil
 	w.Header().Del("Cache-Control")
 
 	// Retrieve the first value for the "Cache-Control" header.
