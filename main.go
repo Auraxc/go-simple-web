@@ -7,8 +7,15 @@ import (
 
 // 未使用的方法声明为 "_"
 
-func home(w http.ResponseWriter, _ *http.Request) {
+func home(w http.ResponseWriter, r *http.Request) {
 	_, err := w.Write([]byte("Hello from Snippetbox"))
+	// 如果路由没有匹配到，最终都会路由到 “/” 下
+	// 对于不存在的路由需要返回一个 404 页面，在这里判断一下路径，如果不是 “/” 说明是一个不存在的路由
+	// 返回一个 404 页面
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
 	if err != nil {
 		return
 	}
