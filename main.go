@@ -40,6 +40,9 @@ func snippetCreate(w http.ResponseWriter, r *http.Request) {
 		// code and the w.Write() method to write a "Method Not Allowed"
 		// response body. We then return from the function so that the
 		// subsequent code is not executed.
+		// 优化返回的请求头，声明允许的方法
+		// 注意：设置返回头的操作需要在调用 w.WriteHeader() 方法之前，否则设置请求头的操作是无效的
+		w.Header().Set("Allow", "POST")
 
 		// 如果不指定状态码，默认会返回 200，这是不符合状态码设计的
 		w.WriteHeader(405)
