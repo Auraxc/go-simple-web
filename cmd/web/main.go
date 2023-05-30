@@ -4,9 +4,24 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
+	// Use log.New() to create a logger for writing information messages. This takes
+	// three parameters: the destination to write the logs to (os.Stdout), a string
+	// prefix for message (INFO followed by a tab), and flags to indicate what
+	// additional information to include (local date and time). Note that the flags
+	// are joined using the bitwise OR operator |.
+	// 使用 log.New() 方法创建一个日志记录器，需要传入三个参数：日志的输出方，日志前缀，附带的信息（日期和时间，使用"|"连接）
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+
+	// Create a logger for writing error messages in the same way, but use stderr as
+	// the destination and use the log.Lshortfile flag to include the relevant
+	// file name and line number.
+	// 创建一个错误日志记录器，以 stderr 作为输出方，
+	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+
 	mux := http.NewServeMux()
 
 	// Define a new command-line flag with the name 'addr', a default value of ":4000"
@@ -39,7 +54,7 @@ func main() {
 	mux.HandleFunc("/snippet/view", snippetView)
 	mux.HandleFunc("/snippet/create", snippetCreate)
 
-	log.Printf("Starting server on %s", *addr)
+	infoLog.Printf("Starting server on %s", *addr)
 	err := http.ListenAndServe(*addr, mux)
-	log.Fatal(err)
+	errorLog.Fatal(err)
 }
