@@ -43,7 +43,14 @@ func main() {
 	mux.HandleFunc("/snippet/view", app.snippetView)
 	mux.HandleFunc("/snippet/create", app.snippetCreate)
 
+	// 初始化 http server
+	srv := &http.Server{
+		Addr:     *addr,
+		ErrorLog: errorLog,
+		Handler:  mux,
+	}
+
 	infoLog.Printf("Starting server on %s", *addr)
-	err := http.ListenAndServe(*addr, mux)
+	err := srv.ListenAndServe()
 	errorLog.Fatal(err)
 }
