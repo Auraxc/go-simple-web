@@ -16,25 +16,34 @@ func home(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+
+	// Initialize a slice containing the paths to the two files. It's important
+	// to note that the file containing our base template must be the *first*
+	// file in the slice.
+	// 初始化一个包含两个文件路径的切片，注意：定义的基础模板必须在第一个文件的位置
+	files := []string{
+		"./ui/html/base.tmpl",
+		"./ui/html/pages/home.tmpl",
+	}
+
 	// Use the template.ParseFiles() function to read the template file into a
 	// template set. If there's an error, we log the detailed error message and use
 	// the http.Error() function to send a generic 500 Internal Server Error
 	// response to the user.
 	// 用 template.ParseFiles() 方法来读取模板到 template set，如果报错就返回一个 500 错误
 	// 路径必须是基于工作目录的相对路径，或者是绝对路径
-
-	ts, err := template.ParseFiles("./ui/html/pages/home.tmpl")
+	// 注意这里的参数与之前不同
+	ts, err := template.ParseFiles(files...)
 	if err != nil {
 		log.Print(err.Error())
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	// We then use the Execute() method on the template set to write the
-	// template content as the response body. The last parameter to Execute()
-	// represents any dynamic data that we want to pass in, which for now we'll
-	// leave as nil.
-	// 用 Execute() 方法将模板写入到响应体中，模板里不需要传入数据，这里的 data 为 nil
-	err = ts.Execute(w, nil)
+
+	// Use the ExecuteTemplate() method to write the content of the "base"
+	// template as the response body.
+	// 用 ExecuteTemplate() 方法
+	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
 		log.Print(err.Error())
 		http.Error(w, "Internal Server Error", 500)
