@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
+	"html/template"
+	"log"
 	"net/http"
 	"strconv"
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
-	_, err := w.Write([]byte("Hello from Snippetbox"))
 	// 如果路由没有匹配到，最终都会路由到 “/” 下
 	// 对于不存在的路由需要返回一个 404 页面，在这里判断一下路径，如果不是 “/” 说明是一个不存在的路由
 	// 返回一个 404 页面
@@ -15,10 +16,29 @@ func home(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+	// Use the template.ParseFiles() function to read the template file into a
+	// template set. If there's an error, we log the detailed error message and use
+	// the http.Error() function to send a generic 500 Internal Server Error
+	// response to the user.
+	// 用 template.ParseFiles() 方法来读取模板到 template set，如果报错就返回一个 500 错误
+	// 路径必须是基于工作目录的相对路径，或者是绝对路径
+
+	ts, err := template.ParseFiles("./ui/html/pages/home.tmpl")
 	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-
+	// We then use the Execute() method on the template set to write the
+	// template content as the response body. The last parameter to Execute()
+	// represents any dynamic data that we want to pass in, which for now we'll
+	// leave as nil.
+	// 用 Execute() 方法将模板写入到响应体中，模板里不需要传入数据，这里的 data 为 nil
+	err = ts.Execute(w, nil)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", 500)
+	}
 }
 
 // 添加 snippetView 处理方法
