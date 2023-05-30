@@ -7,6 +7,15 @@ import (
 	"os"
 )
 
+// Define an application struct to hold the application-wide dependencies for the
+// web application. For now we'll only include fields for the two custom loggers, but
+// we'll add more to it as the build progresses.
+// 定义一个 application 结构，这里只先定义两个 log 方法，之后还会添加更多东西
+type application struct {
+	errorLog *log.Logger
+	infoLog  *log.Logger
+}
+
 func main() {
 	// Use log.New() to create a logger for writing information messages. This takes
 	// three parameters: the destination to write the logs to (os.Stdout), a string
@@ -44,15 +53,23 @@ func main() {
 	// 创建一个文件服务，指定 "./ui/static/" 为根目录
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 
+	// Initialize a new instance of our application struct, containing the
+	// dependencies.
+	// 初始化一个新的 application
+	app := &application{
+		errorLog: errorLog,
+		infoLog:  infoLog,
+	}
+
 	// Use the mux.Handle() function to register the file server as the handler for
 	// all URL paths that start with "/static/". For matching paths, we strip the
 	// "/static" prefix before the request reaches the file server.
 	// 用 mux.Handle() 注册文件服务，以 /static/ 开头的路径都将路由到文件服务
 	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/snippet/view", snippetView)
-	mux.HandleFunc("/snippet/create", snippetCreate)
+	mux.HandleFunc("/", app.home)
+	mux.HandleFunc("/snippet/view", app.snippetView)
+	mux.HandleFunc("/snippet/create", app.snippetCreate)
 
 	infoLog.Printf("Starting server on %s", *addr)
 	err := http.ListenAndServe(*addr, mux)

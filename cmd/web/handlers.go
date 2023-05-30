@@ -8,10 +8,11 @@ import (
 	"strconv"
 )
 
-func home(w http.ResponseWriter, r *http.Request) {
-	// 如果路由没有匹配到，最终都会路由到 “/” 下
-	// 对于不存在的路由需要返回一个 404 页面，在这里判断一下路径，如果不是 “/” 说明是一个不存在的路由
-	// 返回一个 404 页面
+// Change the signature of the home handler so it is defined as a method against
+// *application.
+
+func (app *application) home(w http.ResponseWriter, r *http.Request) {
+
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
@@ -53,7 +54,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 // 添加 snippetView 处理方法
 // Add a snippetView handler function.
-func snippetView(w http.ResponseWriter, r *http.Request) {
+func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	// Extract the value of the id parameter from the query string and try to
 	// convert it to an integer using the strconv.Atoi() function. If it can't
 	// be converted to an integer, or the value is less than 1, we return a 404 page
@@ -83,7 +84,7 @@ func snippetView(w http.ResponseWriter, r *http.Request) {
 
 // 添加 snippetCreate 处理方法
 // Add a snippetCreate handler function.
-func snippetCreate(w http.ResponseWriter, r *http.Request) {
+func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		// 这里使用一个判断来限定请求方法，如果不是 POST 请求，则返回一个 405 状态码，并且返回一个“请求方法不允许”的提示。
 		// If it's not, use the w.WriteHeader() method to send a 405 status
