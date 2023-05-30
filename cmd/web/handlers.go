@@ -23,6 +23,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// 初始化一个包含两个文件路径的切片，注意：定义的基础模板必须在第一个文件的位置
 	files := []string{
 		"./ui/html/base.tmpl",
+		"./ui/html/partials/nav.tmpl",
 		"./ui/html/pages/home.tmpl",
 	}
 
