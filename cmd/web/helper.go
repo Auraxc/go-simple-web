@@ -12,7 +12,10 @@ import (
 func (app *application) serverError(w http.ResponseWriter, err error) {
 	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
 	// 从实际报错位置打印报错日志，不指定深度错误信息会展示本函数的报错，不够直观
-	app.errorLog.Output(2, trace)
+	err = app.errorLog.Output(2, trace)
+	if err != nil {
+		return
+	}
 
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
