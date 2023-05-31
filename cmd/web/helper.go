@@ -11,7 +11,8 @@ import (
 // serverError 功能将错误信息和堆栈追踪信息使用 errorLog 输出，并且返回500服务器错误响应给用户
 func (app *application) serverError(w http.ResponseWriter, err error) {
 	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
-	app.errorLog.Print(trace)
+	// 从实际报错位置开始打印报错信息，不指定层级报错信息第一层会从本函数开始，不利于 DEBUG
+	app.errorLog.Output(2, trace)
 
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
