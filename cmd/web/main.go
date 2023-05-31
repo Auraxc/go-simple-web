@@ -17,17 +17,13 @@ type application struct {
 }
 
 func main() {
-
+	// 经过简化的 main 功能限制为：1.解析运行所需的参数，2.处理依赖关系，3.运行 HTTP server
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
-
-	mux := http.NewServeMux()
 
 	addr := flag.String("addr", ":4000", "HTTP network address")
 
 	flag.Parse()
-
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
 
 	// Initialize a new instance of our application struct, containing the
 	// dependencies.
@@ -37,17 +33,13 @@ func main() {
 		infoLog:  infoLog,
 	}
 
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
-
-	mux.HandleFunc("/", app.home)
-	mux.HandleFunc("/snippet/view", app.snippetView)
-	mux.HandleFunc("/snippet/create", app.snippetCreate)
-
 	// 初始化 http server
 	srv := &http.Server{
 		Addr:     *addr,
 		ErrorLog: errorLog,
-		Handler:  mux,
+		// Call the new app.routes() method to get the servemux containing our routes.
+		// 使用 routes() 初始化路由
+		Handler: app.routes(),
 	}
 
 	infoLog.Printf("Starting server on %s", *addr)
