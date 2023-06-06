@@ -3,24 +3,31 @@ package main
 import (
 	"database/sql"
 	"flag"
+	_ "github.com/go-sql-driver/mysql" // New import
+	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"snippetbox.ab.net/internal/models"
-
-	_ "github.com/go-sql-driver/mysql" // New import
 )
 
 // Add a snippets field to the application struct. This will allow us to
 // make the SnippetModel object available to our handlers.
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
-	snippets *models.SnippetModel
+	errorLog      *log.Logger
+	infoLog       *log.Logger
+	snippets      *models.SnippetModel
+	templateCache map[string]*template.Template
+}
+
+type templateData struct {
+	Snippet  *models.Snippet
+	Snippets []*models.Snippet
 }
 
 func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
+	//dsn := flag.String("dsn", "web:pass@/snippetbox?parseTime=true", "MySQL data source name")
 	dsn := flag.String("dsn", "web:pass@tcp(127.0.0.1:13306)/snippetbox?parseTime=true", "MySQL data source name")
 
 	flag.Parse()
@@ -39,13 +46,18 @@ func main() {
 		}
 	}(db)
 
-	// Initialize a models.SnippetModel instance and add it to the application
-	// dependencies.
-	// 初始化 models.SnippetModel 实例
+	// Initialize a new template cache...
+	templateCache, err := newTemplateCache()
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+
+	// And add it to the application dependencies.
 	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
-		snippets: &models.SnippetModel{DB: db},
+		errorLog:      errorLog,
+		infoLog:       infoLog,
+		snippets:      &models.SnippetModel{DB: db},
+		templateCache: templateCache,
 	}
 
 	srv := &http.Server{
