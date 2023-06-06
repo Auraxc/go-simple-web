@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"html/template" // Uncomment import
 	"net/http"
 	"snippetbox.ab.net/internal/models"
 	"strconv"
@@ -13,9 +12,8 @@ import (
 // *application.
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-
 	if r.URL.Path != "/" {
-		http.NotFound(w, r)
+		app.notFound(w)
 		return
 	}
 
@@ -25,26 +23,10 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := &templateData{
+	// Use the new render helper.
+	app.render(w, http.StatusOK, "home.tmpl", &templateData{
 		Snippets: snippets,
-	}
-
-	files := []string{
-		"./ui/html/base.tmpl",
-		"./ui/html/partials/nav.tmpl",
-		"./ui/html/pages/home.tmpl",
-	}
-
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	err = ts.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		app.serverError(w, err)
-	}
+	})
 }
 
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
@@ -64,33 +46,12 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Initialize a slice containing the paths to the view.tmpl file,
-	// plus the base layout and navigation partial that we made earlier.
-	// 初始化一个包含 view.tmpl　的切片，包含之前建立的基础模板
-	files := []string{
-		"./ui/html/base.tmpl",
-		"./ui/html/partials/nav.tmpl",
-		"./ui/html/pages/view.tmpl",
-	}
-	data := &templateData{
+	// Use the new render helper.
+	app.render(w, http.StatusOK, "view.tmpl", &templateData{
 		Snippet: snippet,
-	}
-	// Parse the template files...
-	// 解析模板文件
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	// And then execute them. Notice how we are passing in the snippet
-	// data (a models.Snippet struct) as the final parameter?
-	// 执行它们，将数据库查到的数据传入模板
-	err = ts.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		app.serverError(w, err)
-	}
+	})
 }
+
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.Header().Set("Allow", http.MethodPost)
