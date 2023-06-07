@@ -3,7 +3,16 @@ package main
 import (
 	"html/template" // New import
 	"path/filepath" // New import
+	"snippetbox.ab.net/internal/models"
 )
+
+// Add a CurrentYear field to the templateData struct.
+// 添加 CurrentYear 字段
+type templateData struct {
+	CurrentYear int
+	Snippet     *models.Snippet
+	Snippets    []*models.Snippet
+}
 
 func newTemplateCache() (map[string]*template.Template, error) {
 	// Initialize a new map to act as the cache.
