@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"snippetbox.ab.net/internal/models"
 	"strconv"
+	"strings"
+	"unicode/utf8"
 )
 
 // Change the signature of the home handler so it is defined as a method against
@@ -62,16 +64,60 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 // response. We'll update this shortly to show a HTML form.
 // 添加一个新的 snippetCreate 的 handler，现在直接返回，之后替换成 html 页面
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Display the form for creating a new snippet..."))
+	data := app.newTemplateData(r)
+
+	app.render(w, http.StatusOK, "create.tmpl", data)
 }
 
 func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
 	// Checking if the request method is a POST is now superfluous and can be
 	// removed, because this is done automatically by httprouter.
 	// 检查请求方法是 POST 现在不需要实现了，因为 httprouter 已经实现过了
-	title := "O snail"
-	content := "O snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n– Kobayashi Issa"
-	expires := 7
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+	}
+
+	// Use the r.PostForm.Get() method to retrieve the title and content
+	// from the r.PostForm map.
+	// 用 r.PostForm.Get() 来获取 Post 参数
+	title := r.PostForm.Get("title")
+	content := r.PostForm.Get("content")
+
+	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
+	// Initialize a map to hold any validation errors for the form fields.
+	fieldErrors := make(map[string]string)
+
+	// Check that the title value is not blank and is not more than 100
+	// characters long. If it fails either of those checks, add a message to the
+	// errors map using the field name as the key.
+	if strings.TrimSpace(title) == "" {
+		fieldErrors["title"] = "This field cannot be blank"
+	} else if utf8.RuneCountInString(title) > 100 {
+		fieldErrors["title"] = "This field cannot be more than 100 characters long"
+	}
+
+	// Check that the Content value isn't blank.
+	if strings.TrimSpace(content) == "" {
+		fieldErrors["content"] = "This field cannot be blank"
+	}
+
+	// Check the expires value matches one of the permitted values (1, 7 or
+	// 365).
+	if expires != 1 && expires != 7 && expires != 365 {
+		fieldErrors["expires"] = "This field must equal 1, 7 or 365"
+	}
+
+	// If there are any errors, dump them in a plain text HTTP response and
+	// return from the handler.
+	if len(fieldErrors) > 0 {
+		fmt.Fprint(w, fieldErrors)
+		return
+	}
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
 
 	id, err := app.snippets.Insert(title, content, expires)
 	if err != nil {
@@ -79,7 +125,5 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// Update the redirect path to use the new clean URL format.
-	// 创建完成后直接重定向到新的页面，使用新的 URL 格式
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
