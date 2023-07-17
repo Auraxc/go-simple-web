@@ -98,13 +98,7 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	// 声明一个空的 snippetCreateForm 结构
 	var form snippetCreateForm
 
-	// Call the Decode() method of the form decoder, passing in the current
-	// request and *a pointer* to our snippetCreateForm struct. This will
-	// essentially fill our struct with the relevant values from the HTML form.
-	// If there is a problem, we return a 400 Bad Request response to the client.
-	// 调用 Decode() 方法对 form 表单进行解析，这里使用&声明指针，这样会将数据填充到之前声明的 form 结构中
-	// 如果解析过程有问题，返回一个 400 相应给客户端。
-	err = app.formDecoder.Decode(&form, r.PostForm)
+	err := app.decodePostForm(r, &form)
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
