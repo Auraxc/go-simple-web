@@ -3,7 +3,8 @@ package main
 import (
 	"database/sql"
 	"flag"
-	_ "github.com/go-sql-driver/mysql" // New import
+	"github.com/go-playground/form/v4"
+	_ "github.com/go-sql-driver/mysql"
 	"html/template"
 	"log"
 	"net/http"
@@ -18,6 +19,7 @@ type application struct {
 	infoLog       *log.Logger
 	snippets      *models.SnippetModel
 	templateCache map[string]*template.Template
+	formDecoder   *form.Decoder
 }
 
 func main() {
@@ -41,18 +43,20 @@ func main() {
 		}
 	}(db)
 
-	// Initialize a new template cache...
 	templateCache, err := newTemplateCache()
 	if err != nil {
 		errorLog.Fatal(err)
 	}
 
-	// And add it to the application dependencies.
+	// Initialize a decoder instance...
+	formDecoder := form.NewDecoder()
+
 	app := &application{
 		errorLog:      errorLog,
 		infoLog:       infoLog,
 		snippets:      &models.SnippetModel{DB: db},
 		templateCache: templateCache,
+		formDecoder:   formDecoder,
 	}
 
 	srv := &http.Server{
