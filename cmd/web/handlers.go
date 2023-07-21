@@ -98,7 +98,7 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	// 声明一个空的 snippetCreateForm 结构
 	var form snippetCreateForm
 
-	err := app.decodePostForm(r, &form)
+	err = app.decodePostForm(r, &form)
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
