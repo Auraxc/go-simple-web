@@ -51,19 +51,8 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Use the PopString() method to retrieve the value for the "flash" key.
-	// PopString() also deletes the key and value from the session data, so it
-	// acts like a one-time fetch. If there is no matching key in the session
-	// data this will return the empty string.
-	// 用 PopString() 方法获取 key 为 flash 的内容，PopString() 方法会删除相应的 key 和 value
-	// 所以看起来 ‘flash’ 就像一次性的消息，如果没有获取到任何内容，PopString() 方法会返回一个空字符串
-	flash := app.sessionManager.PopString(r.Context(), "flash")
-
 	data := app.newTemplateData(r)
 	data.Snippet = snippet
-
-	// Pass the flash message to the template.
-	data.Flash = flash
 
 	app.render(w, http.StatusOK, "view.tmpl", data)
 }
