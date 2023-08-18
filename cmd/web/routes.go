@@ -37,9 +37,14 @@ func (app *application) routes() http.Handler {
 	router.Handler(http.MethodGet, "/snippet/create", dynamic.ThenFunc(app.snippetCreate))
 	router.Handler(http.MethodPost, "/snippet/create", dynamic.ThenFunc(app.snippetCreatePost))
 
-	// Create a middleware chain containing our 'standard' middleware
-	// which will be used for every request our application receives.
-	// 创建一个中间件的调用链
+	// Add the five new routes, all of which use our 'dynamic' middleware chain.
+	// 添加注册登录相关的路由
+	router.Handler(http.MethodGet, "/user/signup", dynamic.ThenFunc(app.userSignup))
+	router.Handler(http.MethodPost, "/user/signup", dynamic.ThenFunc(app.userSignupPost))
+	router.Handler(http.MethodGet, "/user/login", dynamic.ThenFunc(app.userLogin))
+	router.Handler(http.MethodPost, "/user/login", dynamic.ThenFunc(app.userLoginPost))
+	router.Handler(http.MethodPost, "/user/logout", dynamic.ThenFunc(app.userLogoutPost))
+
 	standard := alice.New(app.recoverPanic, app.logRequest, secureHeaders)
 
 	// Return the 'standard' middleware chain followed by the servemux.
