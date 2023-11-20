@@ -266,5 +266,14 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Logout the user...")
+	err := app.sessionManager.RenewToken(r.Context())
+	if err != nil {
+		app.serverError(w, err)
+	}
+	// 从 session 数据中移除 authenticatedUserID， 实现真正的登出
+	app.sessionManager.Remove(r.Context(), "authenticatedUserID")
+	// 增加一条 flash 消息确认当前用户已经登出
+	app.sessionManager.Put(r.Context(), "flash", "You've been logged out successfully!")
+	// 重定向到主页
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
