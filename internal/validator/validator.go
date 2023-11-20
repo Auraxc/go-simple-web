@@ -10,13 +10,14 @@ import (
 // form fields.
 // 定义一个新的 Validator type，用来存放验证错误的映射
 type Validator struct {
-	FieldErrors map[string]string
+	FieldErrors    map[string]string
+	NonFieldErrors []string
 }
 
 // Valid returns true if the FieldErrors map doesn't contain any entries.
-// 如果 FieldErrors　映射不包含任何内容，返回　true
+// 如果 FieldErrors 和 NonFieldErrors 不包含任何内容，返回　true
 func (v *Validator) Valid() bool {
-	return len(v.FieldErrors) == 0
+	return len(v.FieldErrors) == 0 && len(v.NonFieldErrors) == 0
 }
 
 // AddFieldError() adds an error message to the FieldErrors map (so long as no
@@ -25,7 +26,7 @@ func (v *Validator) Valid() bool {
 func (v *Validator) AddFieldError(key, message string) {
 	// Note: We need to initialize the map first, if it isn't already
 	// initialized.
-	// 注意：首先需要初始化映射，如果没有被初始化的话
+	// 注意：map 初始化需要用 make 函数
 	if v.FieldErrors == nil {
 		v.FieldErrors = make(map[string]string)
 	}
@@ -83,4 +84,10 @@ func MinChars(value string, n int) bool {
 // expression pattern.
 func Matches(value string, rx *regexp.Regexp) bool {
 	return rx.MatchString(value)
+}
+
+// Create an AddNonFieldError() helper for adding error messages to the new
+// NonFieldErrors slice.
+func (v *Validator) AddNonFieldError(message string) {
+	v.NonFieldErrors = append(v.NonFieldErrors, message)
 }
